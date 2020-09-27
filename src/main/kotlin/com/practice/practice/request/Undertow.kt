@@ -26,7 +26,7 @@ class Undertow(private val handler: HttpHandler = UndertowHandler()) : Mainable 
             exchange.statusCode = 200
             exchange.inputStream.use { stream ->
                 exchange.outputStream.use { out ->
-                    stream.transferTo(out)
+//                    stream.transferTo(out)
                 }
             }
         }

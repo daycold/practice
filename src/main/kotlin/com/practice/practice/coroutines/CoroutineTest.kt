@@ -6,6 +6,7 @@ import io.lettuce.core.SocketOptions
 import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.api.async.RedisAsyncCommands
 import kotlinx.coroutines.*
+import kotlinx.coroutines.future.asDeferred
 import java.io.Closeable
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
@@ -13,7 +14,6 @@ import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * @author Stefan Liu
@@ -28,6 +28,8 @@ class RedisProxy(private val redisClient: RedisClient) : InvocationHandler {
         ) {
             connection?.close()
             return redisClient.shutdown()
+        } else if (method.declaringClass == Any::class.java) {
+            return method.invoke(this, method, args)
         }
         return if (args != null)
             method.invoke(fetchConnection().async(), *args)
@@ -49,18 +51,16 @@ class RedisProxy(private val redisClient: RedisClient) : InvocationHandler {
     }
 }
 
+@SuppressWarnings("unused")
 fun lettuceMain() = runBlocking {
     val redisService = Proxy.newProxyInstance(
         RedisProxy::class.java.classLoader,
         arrayOf(RedisService::class.java),
         RedisProxy(NioTest.getRedisService())
     ) as RedisService
-    val name = async {
+    async {
         val nameFuture = redisService.get("name")
-        while (!nameFuture.isDone) {
-            delay(200)
-        }
-        nameFuture.get()
+        nameFuture.asDeferred().await()
     }
 }
 
@@ -84,9 +84,11 @@ class NioTest {
     }
 }
 
+@SuppressWarnings("unused")
 class LockTest {
     private val lock = ReentrantLock()
 
+    @SuppressWarnings("unused")
     suspend fun compete() {
         while (!lock.tryLock()) {
             println("failed to obtain lock")
@@ -94,12 +96,13 @@ class LockTest {
             println("wakeup")
         }
         println("obtain lock successfully")
-        Thread.sleep(300)
+        delay(300)
         println("quit successfully")
         lock.unlock()
         println(System.currentTimeMillis())
     }
 
+    @SuppressWarnings("unused")
     fun doAnotherThing() {
         println("do another thing")
         Thread.sleep(300)
@@ -129,6 +132,7 @@ class LockTestThread {
     }
 }
 
+@SuppressWarnings("unused")
 fun LockMain() {
     val lockTest = LockTestThread()
     val thread1 = thread(start = false) {
@@ -154,6 +158,7 @@ fun LockMain() {
     thread2.start()
 }
 
+@SuppressWarnings("unused")
 fun testCoroutineOutOfThread() {
     val coroutineDispather = newFixedThreadPoolContext(2, "threadPoolContext")
     CoroutineScope(coroutineDispather).launch {

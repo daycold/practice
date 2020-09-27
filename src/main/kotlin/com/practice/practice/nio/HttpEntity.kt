@@ -1,13 +1,10 @@
 package com.practice.practice.nio
 
-import io.netty.channel.ServerChannel
 import java.io.InputStream
 import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
-import java.net.SocketAddress
 import java.nio.ByteBuffer
-import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
 
 /**

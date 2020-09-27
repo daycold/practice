@@ -56,7 +56,7 @@ class Tomcat : Mainable {
         override fun service(req: ServletRequest, res: ServletResponse) {
             req.inputStream.use { stream ->
                 res.outputStream.use { out ->
-                    stream.transferTo(out)
+//                    stream.transferTo(out)
                 }
             }
         }

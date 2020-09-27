@@ -26,7 +26,7 @@ class Jetty : Mainable {
         ) {
             request.inputStream.use { stream ->
                 response.outputStream.use { out ->
-                    stream.transferTo(out)
+//                    stream.transferTo(out)
                 }
             }
         }

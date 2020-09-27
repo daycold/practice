@@ -3,6 +3,7 @@ package com.practice.practice.callback
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
+import kotlin.jvm.Throws
 
 /**
  * @author Stefan Liu
