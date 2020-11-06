@@ -52,8 +52,9 @@ class Mongo : Mainable, Closeable {
         }))
     }
 
-        private val client = MongoClient("mongodb.tst.hello.com", 27017)
-//    private val client = MongoClient("localhost", 27017)
+    private val client = MongoClient("mongodb.tst.hello.com", 27017)
+
+    //    private val client = MongoClient("localhost", 27017)
     val mongoDatabase = client.getDatabase("open-ad")
     private val rabbitMQ = RabbitMQ()
     private val DEVICE_TOPIC = "open_ad_callback_event"

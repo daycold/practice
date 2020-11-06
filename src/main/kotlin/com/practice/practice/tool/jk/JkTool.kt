@@ -18,7 +18,7 @@ import org.apache.http.concurrent.FutureCallback
 import org.apache.http.entity.ContentType
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClients
-import reactor.core.publisher.Mono
+import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -28,7 +28,12 @@ import java.util.concurrent.Executors
  */
 class JkTool : Mainable {
     override fun doMain() {
-        returnCoin(orderNo = "1120180124833000282")
+//        returnCoin(orderNo = "1120180124833000282")
+//        getCombinationInfo("bearer b1d926b7-f535-4d81-a63c-443d4593cc07")
+//        handleCombinationInfoFiles("bearer b1d926b7-f535-4d81-a63c-443d4593cc07")
+        runBlocking {
+            println(checkSkuConnection(220793, "bearer 313dad49-30ff-4ab6-be1d-91c5e4a9572a"))
+        }
         close()
     }
 
@@ -37,6 +42,48 @@ class JkTool : Mainable {
         runBlocking {
 //            handleAccountId(orderNo)
             revertCoinRequest(orderNo)
+        }
+    }
+
+    private fun getCombinationInfo(token: String) = runBlocking {
+        val result = getCombinationActivities(token, 6, 0, 100).map { getCombinationInfo(it, token) }.flatten()
+            .distinctBy { it.id }
+        println("combinationIds[${result.size}]: ")
+        println(JsonMapper.writeValueAsString(result.map { it.id }))
+        val codes = result.map { it.skuCode }.flatten().distinct()
+        println("skuCodes[${codes.size}]: ")
+//        val file = File("code.txt")
+//        file.createNewFile()
+//        val builder = StringBuilder()
+//        codes.forEach { code -> builder.append("promo-service:combination:skucode:").append(code).append("\r\n") }
+//        val text = builder.toString()
+//        file.writeText(text)
+        println(JsonMapper.writeValueAsString(codes))
+        println("combinations: ")
+        println(JsonMapper.writeValueAsString(result))
+    }
+
+    private fun handleCombinationInfoFiles(token: String) = runBlocking {
+        val supposed = File("code.txt")
+        val supposedSkuCodes =
+            supposed.readLines().map { it.substring("promo-service:combination:skucode:".length).toInt() }
+        val actual = File("promo_service.txt")
+        val actualSkuCodes =
+            actual.readLines().map { it.substring("promo-service:combination:skucode:".length).toInt() }
+        val expected = supposedSkuCodes.toMutableList()
+        val unexpected = actualSkuCodes.toMutableList()
+        for (skuCode in actualSkuCodes) {
+            expected.remove(skuCode)
+        }
+        for (skuCode in supposedSkuCodes) {
+            unexpected.remove(skuCode)
+        }
+        println(JsonMapper.writeValueAsString(expected))
+        println(JsonMapper.writeValueAsString(unexpected))
+        expected.forEach {
+            if (checkSkuConnection(it, token)) {
+                println(it)
+            }
         }
     }
 }
@@ -74,8 +121,8 @@ private fun getHost(env: Env) = when (env) {
     Env.INTERNAL -> internalHost
 }
 
-private suspend fun <T> Request.perform(callback: suspend (content: Content?) -> T?): T? {
-    val job = ContentCallback(callback)
+private suspend fun <T> Request.perform(name: String = "client", callback: suspend (content: Content?) -> T?): T? {
+    val job = ContentCallback(callback, name)
     http.execute(this, job)
     return job.getResult()
 }
@@ -152,7 +199,57 @@ private fun handleCoinRevert(orderNo: String, accountId: String?, env: Env) {
         }
 }
 
-class ContentCallback<T>(private val callback: suspend (content: Content?) -> T?) : FutureCallback<Content> {
+private suspend fun getCombinationActivities(token: String, status: Int = 6, page: Int = 0, size: Int = 10): List<Int> {
+    return Request.Get("http://mgmt-gateway.internal.jianke.com/promo/combination/v2?status=$status&page=$page&size=$size")
+        .addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.mimeType)
+        .addHeader(HttpHeaders.AUTHORIZATION, token)
+        .perform("getCombinationActivities") { content ->
+            val node = JsonMapper.readTree(content!!.asBytes())
+            node.path("content").map { it.path("id").numberValue().toInt() }
+        }!!
+}
+
+private suspend fun getCombinationInfo(activityId: Int, token: String): List<CombinationInfo> {
+    return Request.Get("http://mgmt-gateway.internal.jianke.com/promo/combination/v2/$activityId")
+        .addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.mimeType)
+        .addHeader(HttpHeaders.AUTHORIZATION, token)
+        .perform("getCombinationInfo:$activityId") { content ->
+            val node = JsonMapper.readTree(content!!.asBytes())
+            val combinations = mutableListOf<CombinationInfo>()
+            node.path("promoCombinationInfos").forEach { combinationInfo ->
+                val combinationId = combinationInfo.path("id").numberValue().toInt()
+                val skuCodes = mutableListOf<Int>()
+                combinationInfo.path("combinationSkus").forEach { sku ->
+                    if (sku.path("showInDetailPage").numberValue() == 1) {
+                        skuCodes.add(sku.path("skuCode").numberValue().toInt())
+                    }
+                }
+                combinations.add(CombinationInfo(combinationId, skuCodes))
+            }
+            combinations
+        }!!
+}
+
+private suspend fun checkSkuConnection(skuCode: Int, token: String): Boolean {
+    return Request.Get("http://mgmt-gateway.internal.jianke.com/v1/product/saleBody/connection?pageNum=1&productCode=$skuCode")
+        .addHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.mimeType)
+        .addHeader(HttpHeaders.AUTHORIZATION, token)
+        .perform("checkSkuConnection") { content ->
+            val node = JsonMapper.readTree(content!!.asBytes())
+            node.path("data").path("content").size() == 0
+        }!!
+}
+
+private data class CombinationInfo(
+    val id: Int,
+    val skuCode: List<Int>
+)
+
+class ContentCallback<T>(
+    private val callback: suspend (content: Content?) -> T?,
+    private val name: String
+) : FutureCallback<Content> {
+    private val mills = System.currentTimeMillis()
     private val deferred = CompletableDeferred<T?>()
 
     suspend fun getResult(): T? {
@@ -165,8 +262,13 @@ class ContentCallback<T>(private val callback: suspend (content: Content?) -> T?
 
     override fun completed(result: Content?) {
         CoroutineScope(context).launch {
-            deferred.complete(callback.invoke(result))
+            deferred.complete(doCompleted(result))
         }
+    }
+
+    private suspend fun doCompleted(result: Content?): T? {
+        println("${Thread.currentThread().name} $name executes ${System.currentTimeMillis() - mills} ms")
+        return callback.invoke(result)
     }
 
     override fun failed(ex: Exception?) {
