@@ -1,12 +1,22 @@
 buildscript {
     ext {
-        kotlinVersion = "1.4.10"
+        kotlinVersion = "1.4.21"
+    }
+
+    repositories {
+        maven {
+            url "http://maven.aliyun.com/nexus/content/groups/public"
+        }
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin.jvm:org.jetbrains.kotlin.jvm.gradle.plugin:1.4.20-RC"
     }
 }
 
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id 'org.jetbrains.kotlin.jvm' version "1.4.20-RC"
 }
 
 group 'com.practice'
@@ -38,6 +48,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.3.9"
     implementation 'org.mongodb:mongo-java-driver:3.12.7'
+    implementation 'org.elasticsearch.client:elasticsearch-rest-high-level-client:7.11.1'
 //    implementation "org.springframework.boot:spring-boot:2.0.1.RELEASE"
     testImplementation 'junit:junit:4.12'
 }

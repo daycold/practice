@@ -1,15 +1,15 @@
 package com.practice.practice
 
-import org.apache.http.HttpHeaders
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
-import java.io.File
-import java.io.FileOutputStream
+import com.practice.practice.logic.IsInterleave
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author Stefan Liu
  */
 fun main(args: Array<String>) {
+    val map = ConcurrentHashMap<String, String>(8)
+    IsInterleave().doMain()
+//    SortJ().doMain()
 //    Kafka(args[0]).doMain()
 //    val ip = InetAddress.getLocalHost()
 //    val network = NetworkInterface.getByInetAddress(ip)
