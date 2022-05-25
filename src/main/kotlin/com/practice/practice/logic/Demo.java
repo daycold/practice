@@ -13,7 +13,7 @@ public class Demo {
         int len = origin.size();
         List<T> result = new ArrayList<>(len);
         // 循环处理第一个和第三个数之间的交换
-        for (int index = 0; index < len-3; index = index + 3) {
+        for (int index = 0; index < len - 3; index = index + 3) {
             result.add(origin.get(index + 2));
             result.add(origin.get(index + 1));
             result.add(origin.get(index));
@@ -30,41 +30,73 @@ public class Demo {
         return result;
     }
 
+//    public static void main(String... args) {
+//        Demo demo = new Demo();
+//        List<Character> characters = Lists.newArrayList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h');
+//        for (char c : demo.reverse(characters)) {
+//            System.out.print(c);
+//            System.out.print(' ');
+//        }
+//        long mills = System.nanoTime();
+//        List<String> list = new LinkedList<>();
+//        for (char a = 'a'; a <= 'z'; a++) {
+//            for (char b = 'A'; b <= 'Z'; b++) {
+//                list.add(new String(new char[]{a, b, 'z', '中', '种', '国', '山'}));
+//            }
+//        }
+//        Link link = new Link();
+//        link.addWords(list);
+//        System.out.println(System.nanoTime() - mills);
+//        String text = "kcnalkgdbanlkybhalkvcndavguanlkdmcaaAAdsckjahbdkiganlcndjkavnl;kdbakj扎钉按掉了对骂空啊对啊;l" +
+//                "ka;lsdmopaka;m;a寨卡你爱丽kampoehnioandgaklncaklmdsaklcdadagdadcascachbakjgbaklncaklsnadugfabgdlakj" +
+//                "cajkdngaiedtjuhqoirnfvakldsncaiudjghbakldcjkvanlknalkdcna;kldacasdcajgbhdaikdnjcoiw2dakldgna;klscnajfdgab;lg" +
+//                "svdajdlb;akjhdfajukbsdkjcabjkdfbahkjsdhkjabcjkadadsfdkvalkndlakjdfgiaklndglacdams;gda;ldcam;adljfkadk" +
+//                "dsfjhcdagfado3eijaklsnzZz中种国山'";
+//        System.out.println("test.length = " + text.length());
+//        mills = System.nanoTime();
+//        System.out.println(link.matches(text));
+//        System.out.println(System.nanoTime() - mills);
+//        System.out.println("list.size = " + list.size());
+//        mills = System.nanoTime();
+//        for (String word : list) {
+//            if (text.contains(word)) {
+//                System.out.println(true);
+//                break;
+//            }
+//        }
+//        System.out.println(System.nanoTime() - mills);
+//    }
+
     public static void main(String... args) {
-        Demo demo = new Demo();
-        List<Character> characters = Lists.newArrayList('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h');
-        for (char c : demo.reverse(characters)) {
-            System.out.print(c);
-            System.out.print(' ');
-        }
-        long mills = System.nanoTime();
-        List<String> list = new LinkedList<>();
-        for (char a = 'a'; a <= 'z'; a++) {
-            for (char b = 'A'; b <= 'Z'; b++) {
-                list.add(new String(new char[]{a, b, 'z', '中', '种', '国', '山'}));
+        Scanner scanner = new Scanner(System.in);
+        String input = scanner.nextLine();
+        String[] splits = input.split(" ");
+        double pi = 3.1415926535897932;
+        double r = Double.parseDouble(splits[0]);
+        double h = Double.parseDouble(splits[1]);
+        double v = pi * r * r * 2 * h;
+        double s = pi * 2 * r * h + pi * 2 * r * r;
+        System.out.printf("%.2f %.2f", v, s);
+    }
+
+    private int buy(int[] prices) {
+        int currentBenefit = 0;
+        int buyPrice = 0;
+        boolean bought = false;
+        for (int i = 0; i < prices.length - 1; i++) {
+            if (!bought && prices[i + 1] > prices[i]) {
+                bought = true;
+                buyPrice = prices[i];
+            } else if (bought && prices[i + 1] < prices[i]) {
+                bought = false;
+                currentBenefit += prices[i] - buyPrice;
+                buyPrice = 0;
             }
         }
-        Link link = new Link();
-        link.addWords(list);
-        System.out.println(System.nanoTime() - mills);
-        String text = "kcnalkgdbanlkybhalkvcndavguanlkdmcaaAAdsckjahbdkiganlcndjkavnl;kdbakj扎钉按掉了对骂空啊对啊;l" +
-                "ka;lsdmopaka;m;a寨卡你爱丽kampoehnioandgaklncaklmdsaklcdadagdadcascachbakjgbaklncaklsnadugfabgdlakj" +
-                "cajkdngaiedtjuhqoirnfvakldsncaiudjghbakldcjkvanlknalkdcna;kldacasdcajgbhdaikdnjcoiw2dakldgna;klscnajfdgab;lg" +
-                "svdajdlb;akjhdfajukbsdkjcabjkdfbahkjsdhkjabcjkadadsfdkvalkndlakjdfgiaklndglacdams;gda;ldcam;adljfkadk" +
-                "dsfjhcdagfado3eijaklsnzZz中种国山'";
-        System.out.println("test.length = " + text.length());
-        mills = System.nanoTime();
-        System.out.println(link.matches(text));
-        System.out.println(System.nanoTime() - mills);
-        System.out.println("list.size = " + list.size());
-        mills = System.nanoTime();
-        for (String word : list) {
-            if (text.contains(word)) {
-                System.out.println(true);
-                break;
-            }
+        if (bought) {
+            currentBenefit += prices[prices.length - 1] - buyPrice;
         }
-        System.out.println(System.nanoTime() - mills);
+        return currentBenefit;
     }
 
     static class Link {

@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.logging.log4j.kotlin.CoroutineThreadContext
 import java.util.concurrent.ConcurrentHashMap
+import com.practice.practice.logic.MinWindow
 
 /**
  * @author Stefan Liu
@@ -25,6 +26,7 @@ fun main(args: Array<String>) {
 //    ReverseKGroup().doMain()
     PatternMatch().doMain()
 //    StressTest().doMain()
+//    MinWindow().doMain()
 //    SortJ().doMain()
 //    Kafka(args[0]).doMain()
 //    val ip = InetAddress.getLocalHost()
@@ -53,4 +55,3 @@ fun main(args: Array<String>) {
 interface Mainable {
     fun doMain()
 }
-
