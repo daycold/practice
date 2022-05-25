@@ -1,14 +1,30 @@
 package com.practice.practice
 
-import com.practice.practice.logic.IsInterleave
+import com.practice.practice.logic.*
+import com.practice.practice.tool.JwtTool
+import com.practice.practice.tool.cmic.AsePwd
+import com.practice.practice.tool.cmic.AuditTest
+import com.practice.practice.tool.cmic.Kibana
+import com.practice.practice.tool.cmic.StressTest
+import kotlinx.coroutines.*
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.logging.log4j.kotlin.CoroutineThreadContext
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * @author Stefan Liu
  */
 fun main(args: Array<String>) {
-    val map = ConcurrentHashMap<String, String>(8)
-    IsInterleave().doMain()
+//    AsePwd().doMain()
+//    JwtTool().doMain()
+//    Kibana().doMain()
+//    AuditTest().doMain()
+//    NumDistinct().doMain()
+//    NumDistinct2().doMain()
+//    LongestValidParentheses().doMain()
+//    ReverseKGroup().doMain()
+    PatternMatch().doMain()
+//    StressTest().doMain()
 //    SortJ().doMain()
 //    Kafka(args[0]).doMain()
 //    val ip = InetAddress.getLocalHost()
@@ -32,14 +48,6 @@ fun main(args: Array<String>) {
 //            }
 //        }
 //    }
-    val array = arrayOfNulls<Int>(4)
-    repeat(array.size) {
-        array[it] = it
-    }
-    val newArray = array as Array<Int>
-    newArray.forEach {
-        println(it)
-    }
 }
 
 interface Mainable {

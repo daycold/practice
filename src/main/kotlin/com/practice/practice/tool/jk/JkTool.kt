@@ -121,11 +121,16 @@ private fun getHost(env: Env) = when (env) {
     Env.INTERNAL -> internalHost
 }
 
+ suspend fun <T> Request.perform(name: String = "client", client: Async, callback: suspend (content: Content?) -> T?): T? {
+     val job = ContentCallback(callback, name)
+     client.execute(this, job)
+     return job.getResult()
+ }
+
 private suspend fun <T> Request.perform(name: String = "client", callback: suspend (content: Content?) -> T?): T? {
-    val job = ContentCallback(callback, name)
-    http.execute(this, job)
-    return job.getResult()
+    return perform(name, http, callback)
 }
+
 
 private fun <T> Request.handle(handler: ResponseHandler<T>) = http.execute(this, handler)
 
